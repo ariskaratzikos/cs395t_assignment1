@@ -1,0 +1,37 @@
+# Ignore Python cache
+__pycache__/
+*.py[cod]
+
+# Ignore build artifacts
+build/
+dist/
+*.egg-info/
+
+# Ignore environment files
+.env
+.venv
+env/
+venv/
+
+# Ignore IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ignore log files
+logs/
+*.log
+
+# Ignore data and results
+results/
+processed_datasets/
+*.prof
+*.json
+*.csv
+*.pkl
+*.h5
+*.pt
+*.pth
+.cache/
+/work/10906/arisk/ls6/.cache/

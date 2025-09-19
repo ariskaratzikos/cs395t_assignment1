@@ -1,0 +1,111 @@
+# Base configuration applicable to all experiments unless overridden
+base_config:
+  # --- Model Config ---
+  model_type: "vanilla_transformer"
+  tokenizer_name: "gpt2" 
+
+  # --- Vanilla Transformer Architecture ---
+  model_config:
+    d_model: 768
+    nhead: 12
+    num_layers: 12
+    dim_feedforward: 3072
+    dropout: 0.1
+
+  learning_rate: 3e-4
+  lr_scheduler: cosine
+  num_warmup_steps: 400
+  seed: 42
+  max_grad_norm: 1.0
+  debug_flash: false
+  logging_steps: 250
+
+  # --- Dataset & Training Config ---
+  dataset_name: "wikitext"
+  dataset_config: "wikitext-103-v1"
+  sequence_length: 512
+  batch_size: 16
+  fp16: true
+  gradient_checkpointing: false
+
+  # ---- 8k-step quality run defaults ----
+  learning_rate: 0.0003     # good starting LR for from-scratch
+  num_warmup_steps: 500      # ~6% warmup for 8k steps
+  lr_scheduler: linear
+  max_steps: 8000
+  logging_steps: 250
+
+# Defines all experiment sets and their parameter combinations
+experiments:
+  # Part 1: Profile Sequence Length vs. Memory
+  - name: "seq_len_profiling"
+    tag: "seq_len"
+    params:
+      sequence_length: [128, 256, 512, 1024, 2048]
+    fixed_params:
+      batch_size: 16
+      fp16: true
+      max_steps: 8000  # profiling-focused, not quality
+
+  # Part 2: Profile Batch Size vs. Throughput/Memory (FP32)
+  # - name: "batch_size_profiling_fp32"
+  #   tag: "bs_fp32"
+  #   params:
+  #     batch_size: [4, 8, 16, 32]
+  #   fixed_params:
+  #     sequence_length: 512
+  #     fp16: false
+  #     max_steps: 50
+
+  # Part 3: Profile Batch Size vs. Throughput/Memory (FP16)
+  # - name: "batch_size_profiling_fp16"
+  #   tag: "bs_fp16"
+  #   params:
+  #     batch_size: [4, 8, 16, 32]
+  #   fixed_params:
+  #     sequence_length: 512
+  #     fp16: true
+  #     max_steps: 50
+
+  # Part 5: Vanilla Transformer Optimizations
+  - name: "vanilla_optimizations"
+    tag: "vanilla_opts"
+    runs:
+      # - name: "vanilla_baseline"
+      #   params:
+      #     sequence_length: 1024
+      #     batch_size: 16
+      #     fp16: true
+      #     gradient_checkpointing: false
+      #     max_steps: 8000   # use the 8k schedule here
+      # - name: "vanilla_gradient_checkpointing"
+      #   params:
+      #     sequence_length: 1024
+      #     batch_size: 16
+      #     fp16: true
+      #     gradient_checkpointing: true
+      #     max_steps: 8000
+      #     debug_flash: true
+      - name: "opt_flash_attention"
+        params:
+          sequence_length: 1024
+          batch_size: 16
+          fp16: true
+          gradient_checkpointing: false
+          use_flash_attention: true
+          max_steps: 80
+          debug_flash: true
+        num_gpus: 1
+
+  # Part 7: Model Size Profiling
+  - name: "model_size_profiling"
+    tag: "model_size"
+    runs:
+      - name: "model_large_124M"
+        params:
+          model_config:
+            num_layers: 12
+          sequence_length: 512
+          batch_size: 16
+          fp16: true
+          max_steps: 8000
