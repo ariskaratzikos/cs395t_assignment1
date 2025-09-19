@@ -1,18 +1,11 @@
 #!/bin/bash
-#SBATCH -J transformer_profiling  # Job name
-#SBATCH -o logs/slurm_out_%j.log  # Standard output and error log (%j expands to jobID)
-#SBATCH -p gpu-a100-dev               # Partition to submit to
-#SBATCH -N 1                      # Request 1 node
-#SBATCH -n 1                      # Run a single task
-#SBATCH --mem=80G                 # Request 32 GB of memory
-#SBATCH -t 2:00:00               # Job run time (hh:mm:ss)
 
 # --- Environment Setup ---
 # Load necessary modules
 module load cuda/12.2
 
-source /work/10906/arisk/conda/etc/profile.d/conda.sh
-conda activate /work/10906/arisk/conda/envs/transformer_ml
+source to/your/conda
+conda activate venv
 
 cd /work/10906/arisk/ls6/FND_ML/cs395t_assignment1
 
